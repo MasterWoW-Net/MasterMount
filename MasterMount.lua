@@ -1,53 +1,53 @@
 COLLECTME_NUM_ITEMS_TO_DISPLAY = 9;
 
-COLLECTME_CRITTER = 1;
-COLLECTME_MOUNT   = 2;
+COLLECTME_CRITTER              = 1;
+COLLECTME_MOUNT                = 2;
 
-COLLECTME_VERSION = "1.0v";
+COLLECTME_VERSION              = "1.0v";
 
-local PotentialCompanionsTable = { };
-local PotentialMountsTable = { }; 
-local MissingItemsTable = { };
-local ClickedScrollItem = "";
-local nextCompanion = nil;
-local is_entered = false;
-local currentTab = COLLECTME_CRITTER;
+local PotentialCompanionsTable = {};
+local PotentialMountsTable     = {};
+local MissingItemsTable        = {};
+local ClickedScrollItem        = "";
+local nextCompanion            = nil;
+local is_entered               = false;
+local currentTab               = COLLECTME_CRITTER;
 
-CollectMeSavedVars = { IgnoredCompanionsTable = { }, IgnoredMountsTable = { }, RndCom = { }, Options = { preview = 1 }, };
+CollectMeSavedVars             = { IgnoredCompanionsTable = {}, IgnoredMountsTable = {}, RndCom = {}, Options = { preview = 1 }, };
 
 function CollectMe_OnLoad()
     this:RegisterForDrag("LeftButton");
     this:RegisterEvent("ADDON_LOADED");
     this:RegisterEvent("PLAYER_ENTERING_WORLD");
-    
+
     SLASH_MASTERMOUNT1 = "/mastermount";
     SLASH_MASTERMOUNT2 = "/mm";
     SlashCmdList["MASTERMOUNT"] = CollectMe_SlashHandler;
-    
+
     COLLECTME_LIST_ITEM_HEIGHT = floor(CollectMeFrameScrollFrameButton1:GetHeight());
     tinsert(UISpecialFrames, CollectMeFrame:GetName());
     PanelTemplates_SetTab(CollectMeFrame, COLLECTME_CRITTER);
-    getglobal("CollectMeFrameHeaderFrameText"):SetText("Master Mounts "..COLLECTME_VERSION);
+    getglobal("CollectMeFrameHeaderFrameText"):SetText("Master Mounts " .. COLLECTME_VERSION);
 end
 
 function CollectMe_OnEvent(event)
-    if(event == "ADDON_LOADED") then
-        if(arg1 == "MasterMount") then
-            hooksecurefunc("MoveForwardStart",CollectMe_SummonOnMoving);
+    if (event == "ADDON_LOADED") then
+        if (arg1 == "MasterMount") then
+            hooksecurefunc("MoveForwardStart", CollectMe_SummonOnMoving);
             hooksecurefunc("MoveBackwardStart", CollectMe_SummonOnMoving)
             hooksecurefunc("TurnLeftStart", CollectMe_SummonOnMoving)
             hooksecurefunc("TurnRightStart", CollectMe_SummonOnMoving)
-            hooksecurefunc("ToggleAutoRun",CollectMe_SummonOnMoving);
-            if(CollectMeSavedVars.Options["button_hide"] ~= nil) then
+            hooksecurefunc("ToggleAutoRun", CollectMe_SummonOnMoving);
+            if (CollectMeSavedVars.Options["button_hide"] ~= nil) then
                 CollectMeButtonFrame:Hide();
             end
-            if(is_entered == true) then
+            if (is_entered == true) then
                 CollectMe_CheckSavedVars();
                 CollectMe_NextCompanion();
             end
-        end 
+        end
     end
-    if(event == "PLAYER_ENTERING_WORLD") then
+    if (event == "PLAYER_ENTERING_WORLD") then
         CollectMe_CheckSavedVars();
         CollectMe_NextCompanion();
         is_entered = true;
@@ -56,9 +56,9 @@ end
 
 function CollectMe_SummonOnMoving()
     if CollectMeSavedVars.Options == nil then
-        CollectMeSavedVars.Options = { }
+        CollectMeSavedVars.Options = {}
     end
-    if CollectMeSavedVars.Options["disableonpvp"] == 1 then     
+    if CollectMeSavedVars.Options["disableonpvp"] == 1 then
         if not IsMounted() and not IsStealthed() and not InCombatLockdown() then
             if CollectMeSavedVars.Options["moving"] ~= nil then
                 local companionActive = CollectMe_checkActive()
@@ -81,9 +81,9 @@ function CollectMe_SummonOnMoving()
 end
 
 function CollectMe_checkActive()
-    for i=1, GetNumCompanions("CRITTER") do
+    for i = 1, GetNumCompanions("CRITTER") do
         local _, _, _, _, issummoned = GetCompanionInfo("CRITTER", i);
-        if(issummoned ~= nil) then
+        if (issummoned ~= nil) then
             return true;
         end
     end
@@ -91,27 +91,31 @@ function CollectMe_checkActive()
 end
 
 function CollectMe_NextCompanion()
-    local summonableCompanions = { };
+    local summonableCompanions = {};
     local pointer = 1;
-    for i=1, GetNumCompanions("CRITTER") do
+    for i = 1, GetNumCompanions("CRITTER") do
         local creatureID = GetCompanionInfo("CRITTER", i);
-        if(CollectMeSavedVars.RndCom[creatureID] ~= nil and CollectMeSavedVars.RndCom[creatureID] ~= 0) then
-            for j=1, CollectMeSavedVars.RndCom[creatureID] do
+        if (CollectMeSavedVars.RndCom[creatureID] ~= nil and CollectMeSavedVars.RndCom[creatureID] ~= 0) then
+            for j = 1, CollectMeSavedVars.RndCom[creatureID] do
                 table.insert(summonableCompanions, pointer, i);
                 pointer = pointer + 1;
             end
         end
     end
     if (pointer ~= 1) then
-        local call = math.random(1, pointer-1);
+        local call = math.random(1, pointer - 1);
         nextCompanion = summonableCompanions[call];
-        
+
         local _, _, _, texture = GetCompanionInfo("CRITTER", nextCompanion);
-    
-        getglobal("CollectMeButtonFrame"):SetBackdrop({bgFile = texture, 
-                                            edgeFile = "Interface/Tooltips/UI-Tooltip-Border", 
-                                            tile = false, tileSize = 0, edgeSize = 16, 
-                                            insets = { left = 4, right = 4, top = 4, bottom = 4 }});
+
+        getglobal("CollectMeButtonFrame"):SetBackdrop({
+            bgFile = texture,
+            edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+            tile = false,
+            tileSize = 0,
+            edgeSize = 16,
+            insets = { left = 4, right = 4, top = 4, bottom = 4 }
+        });
     else
         CollectMeButtonFrame:Hide();
     end
@@ -146,23 +150,23 @@ function CollectMe_SlashHandler(msg)
 end
 
 function CollectMe_Update(id)
-    for k,v in pairs(MissingItemsTable) do
+    for k, v in pairs(MissingItemsTable) do
         MissingItemsTable[k] = nil;
     end
 
     local totalItems, totalKnownItems = 0, 0;
 
-    if ( id == COLLECTME_CRITTER ) then
+    if (id == COLLECTME_CRITTER) then
         totalItems, totalKnownItems = CollectMe_CompanionUpdate();
-    elseif ( id == COLLECTME_MOUNT ) then
+    elseif (id == COLLECTME_MOUNT) then
         totalItems, totalKnownItems = CollectMe_MountUpdate();
     end
-    
-    local knownItemPercentage = floor((totalKnownItems/totalItems)*100);
-    CollectMeFrameStatusBar:SetValue(knownItemPercentage);
-    CollectMeFrameStatusBarText:SetText(totalKnownItems.." / "..totalItems.." - "..knownItemPercentage.."%");
 
-    if ( CollectMeFrame:IsVisible() ) then
+    local knownItemPercentage = floor((totalKnownItems / totalItems) * 100);
+    CollectMeFrameStatusBar:SetValue(knownItemPercentage);
+    CollectMeFrameStatusBarText:SetText(totalKnownItems .. " / " .. totalItems .. " - " .. knownItemPercentage .. "%");
+
+    if (CollectMeFrame:IsVisible()) then
         CollectMeScrollFrameUpdate();
     end
 end
@@ -239,13 +243,13 @@ function CollectMe_CompanionUpdate()
     end
 
     totalDBCompanions = totalDBCompanions + processVendorCompanions(GoldVendorCompanions, "Gold Vendor Companions")
-    totalDBCompanions = totalDBCompanions + processVendorCompanions(LegendaryVendorCompanions, "Legendary Vendor Companions")
+    totalDBCompanions = totalDBCompanions +
+        processVendorCompanions(LegendaryVendorCompanions, "Legendary Vendor Companions")
     totalDBCompanions = totalDBCompanions + processVendorCompanions(DonorVendorCompanions, "Donor Vendor Companions")
     totalDBCompanions = totalDBCompanions + processVendorCompanions(AnotherCompanions, "Overall Mounts")
 
     return totalDBCompanions, totalKnownCompanions;
 end
-
 
 local function OnMountClick(mountName)
     RunMacroText("/cast " .. mountName)
@@ -397,27 +401,27 @@ function CollectMeScrollFrameUpdate()
             header:Hide()
         end
     end
-    FauxScrollFrame_Update(CollectMeFrameScrollFrame, totalItemsToShow, COLLECTME_NUM_ITEMS_TO_DISPLAY, COLLECTME_LIST_ITEM_HEIGHT)
+    FauxScrollFrame_Update(CollectMeFrameScrollFrame, totalItemsToShow, COLLECTME_NUM_ITEMS_TO_DISPLAY,
+        COLLECTME_LIST_ITEM_HEIGHT)
 end
 
-
 function CollectMe_ScrollItemMouseOver(self)
-    local itemName = getglobal(self:GetName().."Text"):GetText();
+    local itemName = getglobal(self:GetName() .. "Text"):GetText();
     local text = "No Info";
     local isCompanion = false;
-    for k,v in pairs(CollectMeCompanionInfo) do
+    for k, v in pairs(CollectMeCompanionInfo) do
         cName = GetSpellInfo(k);
-        if(cName == itemName) then
+        if (cName == itemName) then
             text = v;
             isCompanion = true;
             break;
         end
     end
-    
+
     if (isCompanion == false) then
-        for k,v in pairs(CollectMeMountInfo) do
+        for k, v in pairs(CollectMeMountInfo) do
             cName = GetSpellInfo(k);
-            if(cName == itemName) then
+            if (cName == itemName) then
                 text = v;
                 break;
             end
@@ -426,7 +430,7 @@ function CollectMe_ScrollItemMouseOver(self)
 
     local formattedName = string.format("|cff862ec0%s|r", itemName)
     local fullText = string.format("%s\n\n\n\n|cffffff00%s|r", formattedName, text)
-    
+
     CollectMeInfoFrameText:SetText(fullText);
     CollectMeInfoFrame:Show();
     CollectMeScrollFrameUpdate();
@@ -434,12 +438,12 @@ function CollectMe_ScrollItemMouseOver(self)
 end
 
 function CollectMe_ModelHandler(self)
-    if(CollectMeSavedVars.Options["preview"] ~= nil) then 
-        local creatureID = getglobal(self:GetName().."ItemID"):GetText();
-	    if (creatureID ~= nil) then
+    if (CollectMeSavedVars.Options["preview"] ~= nil) then
+        local creatureID = getglobal(self:GetName() .. "ItemID"):GetText();
+        if (creatureID ~= nil) then
             CollectMeModel:Show();
-            CollectMeModel:SetModel("Interface\\Buttons\\TalkToMeQuestion_Grey.mdx"); 
-			CollectMeModel:RefreshUnit(); 
+            CollectMeModel:SetModel("Interface\\Buttons\\TalkToMeQuestion_Grey.mdx");
+            CollectMeModel:RefreshUnit();
             CollectMeModel:SetCreature(creatureID);
             local rotationSpeed = 0.5
             CollectMeModel:SetScript("OnUpdate", function(self, elapsed)
@@ -452,8 +456,8 @@ function CollectMe_ModelHandler(self)
 end
 
 function CollectMe_ScrollHeaderClicked(headerName)
-    for k,v in ipairs(MissingItemsTable) do
-        if ( v.isHeader and v.name == headerName ) then
+    for k, v in ipairs(MissingItemsTable) do
+        if (v.isHeader and v.name == headerName) then
             v.isExpanded = not (v.isExpanded);
             CollectMeScrollFrameUpdate();
             break;
@@ -466,15 +470,15 @@ function CollectMe_SortTableByName(a, b)
 end
 
 function CollectMe_OnDragStart()
-	if(CollectMeSavedVars.Options["button_lock"] == nil) then
+    if (CollectMeSavedVars.Options["button_lock"] == nil) then
         this:StartMoving();
     end
 end
 
 function CollectMe_OnDragStop()
-    if(CollectMeSavedVars.Options["button_lock"] == nil) then
-	   this:StopMovingOrSizing();
-	end
+    if (CollectMeSavedVars.Options["button_lock"] == nil) then
+        this:StopMovingOrSizing();
+    end
 end
 
 function CollectMe_Dismisser()

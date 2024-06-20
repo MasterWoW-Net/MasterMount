@@ -62,7 +62,8 @@ function CollectMePanelScrollFrameUpdate()
                 if (CollectMeSavedVars.RndCom[creatureID] ~= nil) then
                     getglobal("CollectMePanelRndComScrollFrameSlider" .. line .. "Text"):SetText(creatureName);
                     getglobal("CollectMePanelRndComScrollFrameSlider" .. line .. "CreatureID"):SetText(creatureID);
-                    getglobal("CollectMePanelRndComScrollFrameSlider" .. line):SetValue(CollectMeSavedVars.RndCom[creatureID]);
+                    getglobal("CollectMePanelRndComScrollFrameSlider" .. line):SetValue(CollectMeSavedVars.RndCom
+                        [creatureID]);
                     getglobal("CollectMePanelRndComScrollFrameSlider" .. line):Show();
                 end
             else
